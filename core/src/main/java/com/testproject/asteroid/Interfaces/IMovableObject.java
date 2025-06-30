@@ -6,9 +6,9 @@ import com.testproject.asteroid.Classes.DirectionEvent;
 public interface IMovableObject {
     void move(Vector2 direction, float speed, float deltaTime);
 
-    public void updateVision();
+    void updateVision();
 
-    public void rotate (Vector2 direction);
+    void rotate (Vector2 direction, float angle);
 
-    public boolean isObjectVisible(Vector2 position);
+    boolean isObjectVisible(Vector2 position);
 }

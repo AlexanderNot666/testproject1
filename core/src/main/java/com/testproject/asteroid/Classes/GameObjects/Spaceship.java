@@ -17,11 +17,11 @@ public class Spaceship implements MoveEventListener, DirectionEventListener, IMo
     private Texture image;
     private Vector2 shipPosition;
     private Vector2 shipDrawPosition;
-    private Vector2 shipSize;
+    public Vector2 shipSize;
     private Sprite sprite;
 
     private float screenWidth;
-    float screenHeight;
+    private float screenHeight;
     private float shipRotation = 0.0f;
 
     public Spaceship() {
@@ -53,13 +53,13 @@ public class Spaceship implements MoveEventListener, DirectionEventListener, IMo
     @Override
     public void directionChanged(DirectionEvent event) {
         Vector2 direction = new Vector2(event.getMousePosition().x - ( shipPosition.x + screenWidth / 2 ), screenHeight / 2 - (event.getMousePosition().y + shipPosition.y));
-        rotate(direction);
+        rotate(direction, 0.0f);
     }
 
     @Override
     public void move(Vector2 direction, float speed, float deltaTime)
     {
-        Vector2 deltaPosition = new Vector2(direction.x * shipSpeed * deltaTime, direction.y * shipSpeed * deltaTime);
+        Vector2 deltaPosition = new Vector2(direction.x * speed * deltaTime, direction.y * speed * deltaTime);
         shipPosition.add(deltaPosition);
         if (isObjectVisible(shipPosition))
         {
@@ -79,7 +79,7 @@ public class Spaceship implements MoveEventListener, DirectionEventListener, IMo
     }
 
     @Override
-    public void rotate(Vector2 direction) {
+    public void rotate(Vector2 direction, float angle) {
         shipRotation = (float)Math.toDegrees(Math.atan2(direction.y, direction.x)) - 90.0f;
     }
 
