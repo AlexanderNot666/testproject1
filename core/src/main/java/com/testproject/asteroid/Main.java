@@ -17,7 +17,7 @@ import java.util.List;
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
     private final Vector2 screenSizeFullHD = new Vector2(1920, 1080);
-    private int asteroidsCount = 12;
+    private int asteroidsCount = 15;
     private SpriteBatch batch;
     private Background background;
     private Camera camera;
@@ -37,7 +37,7 @@ public class Main extends ApplicationAdapter {
         spaceship = new Spaceship();
         inputController.addLMoveistener(spaceship);
         inputController.addDirectionListener(spaceship);
-        generateAsteroids(spaceship.shipSize.x / 2);
+        generateAsteroids(spaceship.getShipSize() / 2);
     }
 
     @Override

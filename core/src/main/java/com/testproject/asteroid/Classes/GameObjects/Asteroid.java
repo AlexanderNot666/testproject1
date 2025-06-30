@@ -9,18 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.testproject.asteroid.Interfaces.IMovableObject;
 import com.testproject.asteroid.Utils;
 
-import java.util.Random;
-
-public class Asteroid implements IMovableObject {
-    private float asteroidSpeed;
-    private Texture image;
-    private Vector2 asteroidPosition;
-    private Vector2 asteroiDDrawPosition;
-    private Vector2 asteroidSize;
-    private Sprite sprite;
-
-    private float screenWidth;
-    private float screenHeight;
+public class Asteroid extends FlyingObject implements IMovableObject {
     private float asteroidRotation;
     private float asteroidRotationShift;
     private Vector2 asteroidDirection;
@@ -29,66 +18,49 @@ public class Asteroid implements IMovableObject {
         screenWidth = (float) Gdx.graphics.getWidth();
         screenHeight = (float)Gdx.graphics.getHeight();
         image = new Texture(Gdx.files.internal(imageName));
-        asteroidSize = new Vector2(image.getWidth(), image.getHeight());
+        objectSize = new Vector2(image.getWidth(), image.getHeight());
     }
 
     public void initialize(float centerSafeArea)
     {
-        asteroidSpeed = MathUtils.random(200.0f, 400.f);
-        asteroidPosition = getRandomPosition(centerSafeArea);
-        asteroidRotation = 0.0f;
-        asteroidRotationShift = MathUtils.random(-1.0f, 1.f);
+        speed = MathUtils.random(250.0f, 500.f);
+        objectPosition = getRandomPosition(centerSafeArea);
+        objectRotation = 0.0f;
+        asteroidRotationShift = MathUtils.random(-5.0f, 5.f);
         asteroidDirection = getRandomDirection();
         updateVision();
-        sprite = new Sprite(image, 0, 0, (int) asteroidSize.x, (int) asteroidSize.y);
+        sprite = new Sprite(image, 0, 0, (int) objectSize.x, (int) objectSize.y);
     }
 
     public void render(SpriteBatch batch, float deltaTime) {
-        move(asteroidDirection, asteroidSpeed, deltaTime);
-        sprite.setPosition(asteroiDDrawPosition.x, asteroiDDrawPosition.y);
-        sprite.setRotation(asteroidRotation);
-        sprite.draw(batch);
+        move(asteroidDirection, speed, deltaTime);
+        super.render(batch);
     }
 
-    public void resize() {
-        screenWidth = (float)Gdx.graphics.getWidth();
-        screenHeight = (float)Gdx.graphics.getHeight();
-    }
     @Override
     public void move(Vector2 direction, float speed, float deltaTime) {
         Vector2 deltaPosition = new Vector2(direction.x * speed * deltaTime, direction.y * speed * deltaTime);
-        asteroidPosition.add(deltaPosition);
-        if (isObjectVisible(asteroidPosition))
+        objectPosition.add(deltaPosition);
+        if (isObjectVisible(objectPosition))
         {
             updateVision();
         }
         else
         {
-            Vector2 newPosition = Utils.GetObjectReloadPosition(asteroidPosition, asteroidSize, new Vector2(screenWidth, screenHeight));
-            asteroidPosition = newPosition;
+            objectPosition = Utils.GetObjectReloadPosition(objectPosition, objectSize, new Vector2(screenWidth, screenHeight));
             updateVision();
         }
         rotate(null, asteroidRotationShift);
     }
 
     @Override
-    public void updateVision() {
-        asteroiDDrawPosition = new Vector2(asteroidPosition.x - (asteroidSize.x / 2.0f), asteroidPosition.y - (asteroidSize.y / 2.0f));
-    }
-
-    @Override
     public void rotate(Vector2 direction, float angle) {
-        asteroidRotation += angle;
-    }
-
-    @Override
-    public boolean isObjectVisible(Vector2 position) {
-        return Utils.CheckIsObjectOutOfScreen(position, asteroidSize, new Vector2(screenWidth, screenHeight));
+        objectRotation += angle;
     }
 
     private Vector2 getRandomPosition(float centerSafeArea){
-        float x = MathUtils.random(centerSafeArea + asteroidSize.x / 2, screenWidth - asteroidSize.x / 2);
-        float y = MathUtils.random(centerSafeArea + asteroidSize.y / 2, screenHeight - asteroidSize.y / 2);
+        float x = MathUtils.random(centerSafeArea + objectSize.x / 2, screenWidth - objectSize.x / 2);
+        float y = MathUtils.random(centerSafeArea + objectSize.y / 2, screenHeight - objectSize.y / 2);
 
         return new Vector2(x * randomFlip(), y * randomFlip());
     }
