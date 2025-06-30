@@ -44,4 +44,9 @@ public class FlyingObject {
     protected boolean isObjectVisible(Vector2 position){
         return Utils.CheckIsObjectOutOfScreen(position, objectSize, new Vector2(screenWidth, screenHeight));
     }
+
+    public void dispose()
+    {
+        this.dispose();
+    }
 }

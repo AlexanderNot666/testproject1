@@ -5,17 +5,21 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.testproject.asteroid.Classes.CollisionContactListener;
+import com.testproject.asteroid.Classes.EndGameEvent;
 import com.testproject.asteroid.Classes.GameObjects.Asteroid;
 import com.testproject.asteroid.Classes.GameObjects.AsteroidFactory;
 import com.testproject.asteroid.Classes.GameObjects.AsteroidType;
 import com.testproject.asteroid.Classes.GameObjects.Spaceship;
+import com.testproject.asteroid.Interfaces.EndGameEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
-public class Main extends ApplicationAdapter {
+public class Main extends ApplicationAdapter implements EndGameEventListener {
     private final Vector2 screenSizeFullHD = new Vector2(1920, 1080);
     private int asteroidsCount = 15;
     private SpriteBatch batch;
@@ -24,20 +28,34 @@ public class Main extends ApplicationAdapter {
     private InputController inputController;
     private Spaceship spaceship;
     private final List<Asteroid> asteroids = new ArrayList<>();
+    private float centerSafeArea;
+    private World world;
+    private Box2DDebugRenderer debugRenderer;
+    private CollisionContactListener collisionContactListener;
+    private final boolean isDebugRendererEnabled = false;
 
     @Override
     public void create() {
         Gdx.graphics.setWindowedMode((int)screenSizeFullHD.x, (int)screenSizeFullHD.y);
         Gdx.graphics.setTitle("Space");
 
+        world = new World(new Vector2(0, 0), true);
+        collisionContactListener = new CollisionContactListener();
+        world.setContactListener(collisionContactListener);
+        collisionContactListener.addListener(this);
+        if (isDebugRendererEnabled){
+            debugRenderer = new Box2DDebugRenderer();
+        }
+
         batch = new SpriteBatch();
         inputController = new InputController();
         background = new Background();
         camera = new Camera(batch);
-        spaceship = new Spaceship();
+        spaceship = new Spaceship(world);
         inputController.addLMoveistener(spaceship);
         inputController.addDirectionListener(spaceship);
-        generateAsteroids(spaceship.getShipSize() / 2);
+        centerSafeArea = spaceship.getShipSize() / 2;
+        generateAsteroids();
     }
 
     @Override
@@ -51,6 +69,10 @@ public class Main extends ApplicationAdapter {
         background.render(batch);
         spaceship.render(batch);
         renderAsteroids(delta);
+        if (isDebugRendererEnabled){
+            debugRenderer.render(world, camera.getCamera().combined);
+        }
+        world.step(Gdx.graphics.getDeltaTime(), 6, 2);
 
         batch.end();
     }
@@ -68,27 +90,41 @@ public class Main extends ApplicationAdapter {
         inputController.removeDirectionListener(spaceship);
         background.dispose();
         batch.dispose();
+        world.dispose();
+        if (debugRenderer != null) {
+            debugRenderer.dispose();
+        }
+
+        collisionContactListener.removeListener(this);
     }
 
-    private void generateAsteroids(float centerSafeArea) {
-        for (int i = 0; i < asteroidsCount - 1; i++) {
+    private void generateAsteroids() {
+        for (int i = 0; i < asteroidsCount; i++) {
             int asteroidType = MathUtils.random(0, AsteroidType.values().length - 1);
             Asteroid asteroid = AsteroidFactory.getAsteroid(AsteroidType.values()[asteroidType]);
             assert asteroid != null;
-            asteroid.initialize(centerSafeArea);
+            asteroid.initialize(centerSafeArea, world, true);
             asteroids.add(asteroid);
         }
     }
 
     private void renderAsteroids(float deltaTime) {
-        for (int i = 0; i < asteroids.size(); i++) {
-            asteroids.get(i).render(batch, deltaTime);
+        for (Asteroid asteroid : asteroids) {
+            asteroid.render(batch, deltaTime);
         }
     }
 
     private void resizeAsteroids() {
-        for (int i = 0; i < asteroids.size(); i++) {
-            asteroids.get(i).resize();
+        for (Asteroid asteroid : asteroids) {
+            asteroid.resize();
         }
+    }
+
+    @Override
+    public void onGameEnded(EndGameEvent endGameEvent) {
+        for (Asteroid asteroid : asteroids) {
+            asteroid.initialize(centerSafeArea, world, false);
+        }
+        spaceship.initialize();
     }
 }

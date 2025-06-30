@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.World;
 import com.testproject.asteroid.Classes.DirectionEvent;
 import com.testproject.asteroid.Classes.MoveEvent;
 import com.testproject.asteroid.Interfaces.DirectionEventListener;
@@ -11,9 +12,9 @@ import com.testproject.asteroid.Interfaces.IMovableObject;
 import com.testproject.asteroid.Interfaces.MoveEventListener;
 import com.testproject.asteroid.Utils;
 
-public class Spaceship extends FlyingObject implements MoveEventListener, DirectionEventListener, IMovableObject {
+public class Spaceship extends PhysicalObject implements MoveEventListener, DirectionEventListener, IMovableObject {
 
-    public Spaceship() {
+    public Spaceship(World world) {
         screenWidth = (float)Gdx.graphics.getWidth();
         screenHeight = (float)Gdx.graphics.getHeight();
         image = new Texture(Gdx.files.internal("playerShip1_blue.png"));
@@ -22,6 +23,12 @@ public class Spaceship extends FlyingObject implements MoveEventListener, Direct
         updateVision();
         sprite = new Sprite(image, 0, 0, (int) objectSize.x, (int) objectSize.y);
         speed = 300.0f;
+        super.buildPhysicalObject(world);
+    }
+
+    public void initialize() {
+        objectPosition = Vector2.Zero;
+        objectRotation = 0.0f;
     }
 
     @Override
@@ -49,11 +56,13 @@ public class Spaceship extends FlyingObject implements MoveEventListener, Direct
             objectPosition = Utils.GetObjectReloadPosition(objectPosition, objectSize, new Vector2(screenWidth, screenHeight));
             updateVision();
         }
+        body.setTransform(objectPosition, (float)Math.toRadians(objectRotation));
     }
 
     @Override
     public void rotate(Vector2 direction, float angle) {
         objectRotation = (float)Math.toDegrees(Math.atan2(direction.y, direction.x)) - 90.0f;
+        body.setTransform(objectPosition, (float)Math.toRadians(objectRotation));
     }
 
     public float getShipSize() { return objectSize.x; }

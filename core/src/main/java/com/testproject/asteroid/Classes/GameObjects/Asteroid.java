@@ -6,11 +6,11 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.World;
 import com.testproject.asteroid.Interfaces.IMovableObject;
 import com.testproject.asteroid.Utils;
 
-public class Asteroid extends FlyingObject implements IMovableObject {
-    private float asteroidRotation;
+public class Asteroid extends PhysicalObject implements IMovableObject {
     private float asteroidRotationShift;
     private Vector2 asteroidDirection;
 
@@ -21,7 +21,7 @@ public class Asteroid extends FlyingObject implements IMovableObject {
         objectSize = new Vector2(image.getWidth(), image.getHeight());
     }
 
-    public void initialize(float centerSafeArea)
+    public void initialize(float centerSafeArea, World world, boolean isNeedReloadBody)
     {
         speed = MathUtils.random(250.0f, 500.f);
         objectPosition = getRandomPosition(centerSafeArea);
@@ -30,6 +30,9 @@ public class Asteroid extends FlyingObject implements IMovableObject {
         asteroidDirection = getRandomDirection();
         updateVision();
         sprite = new Sprite(image, 0, 0, (int) objectSize.x, (int) objectSize.y);
+        if (isNeedReloadBody){
+            super.buildPhysicalObject(world);
+        }
     }
 
     public void render(SpriteBatch batch, float deltaTime) {
@@ -51,11 +54,13 @@ public class Asteroid extends FlyingObject implements IMovableObject {
             updateVision();
         }
         rotate(null, asteroidRotationShift);
+        body.setTransform(objectPosition, (float)Math.toRadians(objectRotation));
     }
 
     @Override
     public void rotate(Vector2 direction, float angle) {
         objectRotation += angle;
+        body.setTransform(objectPosition, (float)Math.toRadians(objectRotation));
     }
 
     private Vector2 getRandomPosition(float centerSafeArea){

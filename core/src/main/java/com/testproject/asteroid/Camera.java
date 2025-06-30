@@ -28,4 +28,8 @@ public class Camera {
         camera.setToOrtho(false, (float)Gdx.graphics.getWidth(), (float)Gdx.graphics.getHeight());
         updateCameraOptions(Vector3.Zero);
     }
+
+    public OrthographicCamera getCamera() {
+        return camera;
+    }
 }
